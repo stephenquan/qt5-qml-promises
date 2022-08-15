@@ -33,6 +33,26 @@ Item {
         } );
     }
 
+    function grabToImage(item, filePath) {
+        return new Promise(function (resolve, reject) {
+            try {
+                item.grabToImage(function (result) {
+                    try {
+                        if (!result.saveToFile(filePath)) {
+                            reject(new Error(qStr("grabToImage error: %1").arg(filePath)));
+                            return;
+                        }
+                        resolve(filePath);
+                    } catch (saveError) {
+                        reject(saveError);
+                    }
+                } );
+            } catch (grabError) {
+                reject(grabError);
+            }
+        } );
+    }
+
     Component {
         id: sleepComponent
         Timer {
@@ -40,11 +60,16 @@ Item {
             property var reject
             property double startTime: Date.now()
             property bool aborting: internal.userBreakTime > startTime
+            property bool aborted: false
 
             running: true
             repeat: false
 
             onTriggered: {
+                if (aborted) {
+                    return;
+                }
+
                 stop();
                 resolve();
                 Qt.callLater(destroy);
@@ -53,6 +78,7 @@ Item {
             onAbortingChanged: {
                 if (aborting) {
                     if (running) {
+                        aborted = true;
                         stop();
                         reject(new Error("User Break"));
                         Qt.callLater(destroy);
@@ -70,11 +96,16 @@ Item {
             property var reject
             property double startTime: Date.now()
             property bool aborting: internal.userBreakTime > startTime
+            property bool aborted: false
             loops: 1
             paused: false
             running: true
 
             onFinished: {
+                if (aborted) {
+                    return;
+                }
+
                 stop();
                 resolve();
                 Qt.callLater(destroy);
@@ -83,6 +114,7 @@ Item {
             onAbortingChanged: {
                 if (aborting) {
                     if (running) {
+                        aborted = true;
                         stop();
                         reject(new Error("User Break"));
                         Qt.callLater(destroy);
