@@ -4,15 +4,9 @@ Implements JavaScript Promise wrapper for chaining QML events together.
 
 The QMLPromises singleton implements the following methods:
 
- - QMLPromises.userBreak()
- - QMLPromises.sleep(interval)
- - QMLPromises.numberAnimation(target, properties, from, to, duration)
-
-Here's a brief description of each method:
-
-QMLPromises.userBreak() - cancel previous running QMLPromises.
-QMLPromises.sleep(interval) - introduce a pause in the promise chain specified in milliseconds
-QMLPromises.numberAnimation(target, proprerties, from, to, duration) - change a property from one value to another over a duration specified in milliseconds
+ - QMLPromises.userBreak() - cancel previous running QMLPromises.
+ - QMLPromises.sleep(interval) - introduce a pause in the promise chain specified in milliseconds
+ - QMLPromises.numberAnimation(target, proprerties, from, to, duration) - change a property from one value to another over a duration specified in milliseconds
 
 The following animates an SVG bicycle moving along a square permiter.
 
