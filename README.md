@@ -107,3 +107,12 @@ Page {
     }
 }
 ```
+
+To use QMLPromises QML component in your project consider cloning this repo directly in your project:
+
+    git clone https://github.com/stephenquan/qt5-qml-promises.git
+    
+or adding it as a submodule:
+
+    git submodule add https://github.com/stephenquan/qt5-qml-promises.git qt5-qml-promises
+    git submodule update
