@@ -2,13 +2,13 @@
 
 Implements JavaScript Promise wrapper for chaining QML events together.
 
-The QMLPromises singleton implements the following methods:
+The QMLPromises implements the following methods:
 
- - QMLPromises.userBreak() - cancel previous running QMLPromises.
- - QMLPromises.sleep(interval) - introduce a pause in the promise chain specified in milliseconds
- - QMLPromises.numberAnimation(target, proprerties, from, to, duration) - change a property from one value to another over a duration specified in milliseconds
- - QMLPromises.grabToImage(item, filePath) - saves a screen grab of an item to file
- - QMLPromises.asyncToGenerator(fn) - transcode async/await syntax to generator/iterator syntax
+ - userBreak() - cancel previous running QMLPromises.
+ - sleep(interval) - introduce a pause in the promise chain specified in milliseconds
+ - numberAnimation(target, proprerties, from, to, duration) - change a property from one value to another over a duration specified in milliseconds
+ - grabToImage(item, filePath) - saves a screen grab of an item to file
+ - asyncToGenerator(fn) - transcode async/await syntax to generator/iterator syntax
 
 The following animates an SVG bicycle moving along a square permiter.
 
@@ -31,40 +31,40 @@ Page {
 
                 // Cancel previously running Promises.
 
-                QMLPromises.userBreak();
+                qmlPromises.userBreak();
 
                 // Bicycle animation.
 
-                QMLPromises.asyncToGenerator( function* () {
+                qmlPromises.asyncToGenerator( function* () {
                     message.text = qsTr("On your marks!");
                     message.color = "black";
                     messageFrame.background.color = "red";
-                    yield QMLPromises.numberAnimation(messageFrame, "opacity", 1.0, 0.0, 1000);
+                    yield qmlPromises.numberAnimation(messageFrame, "opacity", 1.0, 0.0, 1000);
                     message.text = qsTr("Get set!");
                     message.color = "black";
                     messageFrame.background.color = "yellow";
-                    yield QMLPromises.numberAnimation(messageFrame, "opacity", 1.0, 0.0, 1000);
+                    yield qmlPromises.numberAnimation(messageFrame, "opacity", 1.0, 0.0, 1000);
                     message.text = qsTr("Go!");
                     message.color = "white";
                     messageFrame.background.color = "green";
-                    yield QMLPromises.numberAnimation(messageFrame, "opacity", 1.0, 0.0, 1000);
-                    yield QMLPromises.numberAnimation(bicycle, "x", 100, 300, 1000);
-                    yield QMLPromises.numberAnimation(bicycle, "rotation", 0, -90, 500);
-                    yield QMLPromises.numberAnimation(bicycle, "y", 300, 100, 1000);
-                    yield QMLPromises.numberAnimation(bicycle, "rotation", -90, -180, 500);
-                    yield QMLPromises.numberAnimation(bicycle, "x", 300, 100, 1000);
-                    yield QMLPromises.numberAnimation(bicycle, "rotation", 180, 90, 500);
-                    yield QMLPromises.numberAnimation(bicycle, "y", 100, 300, 1000);
-                    yield QMLPromises.numberAnimation(bicycle, "rotation", 90, 0, 500);
+                    yield qmlPromises.numberAnimation(messageFrame, "opacity", 1.0, 0.0, 1000);
+                    yield qmlPromises.numberAnimation(bicycle, "x", 100, 300, 1000);
+                    yield qmlPromises.numberAnimation(bicycle, "rotation", 0, -90, 500);
+                    yield qmlPromises.numberAnimation(bicycle, "y", 300, 100, 1000);
+                    yield qmlPromises.numberAnimation(bicycle, "rotation", -90, -180, 500);
+                    yield qmlPromises.numberAnimation(bicycle, "x", 300, 100, 1000);
+                    yield qmlPromises.numberAnimation(bicycle, "rotation", 180, 90, 500);
+                    yield qmlPromises.numberAnimation(bicycle, "y", 100, 300, 1000);
+                    yield qmlPromises.numberAnimation(bicycle, "rotation", 90, 0, 500);
                 } )();
                 
                 // Capture animation to disk.
                 
-                QMLPromises.asyncToGenerator( function* () {
+                qmlPromises.asyncToGenerator( function* () {
                     for (let i = 0; i < 200; i++) {
                         let filePath = "C:/temp/img/screengrab" + String(i).padStart(4, '0') + ".png";
-                        yield QMLPromises.sleep(20);
-                        yield QMLPromises.grabToImage(body, filePath);
+                        yield qmlPromises.sleep(20);
+                        yield qmlPromises.grabToImage(body, filePath);
                     }
                 } )();
 
@@ -106,6 +106,10 @@ Page {
             id: message
             color: "black"
         }
+    }
+    
+    QMLPromises {
+        id: qmlPromises
     }
 }
 ```
