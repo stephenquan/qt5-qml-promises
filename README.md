@@ -7,6 +7,7 @@ The QMLPromises singleton implements the following methods:
  - QMLPromises.userBreak() - cancel previous running QMLPromises.
  - QMLPromises.sleep(interval) - introduce a pause in the promise chain specified in milliseconds
  - QMLPromises.numberAnimation(target, proprerties, from, to, duration) - change a property from one value to another over a duration specified in milliseconds
+ - QMLPromises.grabToImage(item, filePath) - saves a screen grab of an item to file
 
 The following animates an SVG bicycle moving along a square permiter.
 
@@ -24,10 +25,14 @@ Page {
 
             onClicked: {
                 bicycle.x = 100;
-                bicycle.y = 400;
+                bicycle.y = 300;
                 bicycle.rotation = 0;
 
+                // Cancel previously running Promises.
+
                 QMLPromises.userBreak();
+
+                // Bicycle animation using Promise chaining.
 
                 Promise.resolve()
                 .then( function () {
@@ -50,14 +55,33 @@ Page {
                 } )
                 .then( () => QMLPromises.numberAnimation(bicycle, "x", 100, 300, 1000) )
                 .then( () => QMLPromises.numberAnimation(bicycle, "rotation", 0, -90, 500) )
-                .then( () => QMLPromises.numberAnimation(bicycle, "y", 400, 200, 1000) )
+                .then( () => QMLPromises.numberAnimation(bicycle, "y", 300, 100, 1000) )
                 .then( () => QMLPromises.numberAnimation(bicycle, "rotation", -90, -180, 500) )
                 .then( () => QMLPromises.numberAnimation(bicycle, "x", 300, 100, 1000) )
                 .then( () => QMLPromises.numberAnimation(bicycle, "rotation", 180, 90, 500) )
-                .then( () => QMLPromises.numberAnimation(bicycle, "y", 200, 400, 1000) )
+                .then( () => QMLPromises.numberAnimation(bicycle, "y", 100, 300, 1000) )
                 .then( () => QMLPromises.numberAnimation(bicycle, "rotation", 90, 0, 500) )
                 .catch( err => errorHandler(err) )
                 ;
+                
+                // Use await-async like syntax to capture animation to disk.
+                
+                _asyncToGenerator( function* () {
+                    try {
+                        for (let i = 0; i < 200; i++) {
+                            let filePath = "C:/temp/img/screengrab" + String(i).padStart(4, '0') + ".png";
+                            yield QMLPromises.sleep(20);
+                            yield QMLPromises.grabToImage(body, filePath);
+                        }
+                    } catch (err) {
+                        err => errorHandler(err);
+                    }
+                } )();
+
+                // Use ffmpeg to combine the above images into an animated gif
+                // ffmpeg -y -framerate 10 -i "screengrab%%04d.png"  -vf fps=10,palettegen pal.png
+                // ffmpeg -y -framerate 10 -i "screengrab%%04d.png" -i pal.png -lavfi "fps=10 [x]; [x][1:v] paletteuse" out.gif
+
             }
         }
     }
@@ -65,7 +89,7 @@ Page {
     Item {
         id: bicycle
         x: 100
-        y: 400
+        y: 300
         width: 0
         height: 0
         property color color: "blue"
