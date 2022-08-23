@@ -125,6 +125,21 @@ Item {
     }
 
     function asyncToGenerator(fn) {
+        return _asyncToGenerator( function* () {
+            try {
+                yield *fn();
+            } catch (err) {
+                let fileName = err.fileName ?? "";
+                let lineNumber = err.lineNumber ?? 1;
+                let columnNumber = err.columnNumber ?? 1;
+                let message = err.message ?? "";
+                console.error(fileName + ":" + lineNumber + ":" + columnNumber + ": " + message);
+                throw err;
+            }
+        } );
+    }
+
+    function _asyncToGenerator(fn) {
         return function() {
             var self = this,
             args = arguments
