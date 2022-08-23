@@ -36,43 +36,35 @@ Page {
                 // Bicycle animation.
 
                 QMLPromises.asyncToGenerator( function* () {
-                    try {
-                        message.text = qsTr("On your marks!");
-                        message.color = "black";
-                        messageFrame.background.color = "red";
-                        yield QMLPromises.numberAnimation(messageFrame, "opacity", 1.0, 0.0, 1000);
-                        message.text = qsTr("Get set!");
-                        message.color = "black";
-                        messageFrame.background.color = "yellow";
-                        yield QMLPromises.numberAnimation(messageFrame, "opacity", 1.0, 0.0, 1000);
-                        message.text = qsTr("Go!");
-                        message.color = "white";
-                        messageFrame.background.color = "green";
-                        yield QMLPromises.numberAnimation(messageFrame, "opacity", 1.0, 0.0, 1000);
-                        yield QMLPromises.numberAnimation(bicycle, "x", 100, 300, 1000);
-                        yield QMLPromises.numberAnimation(bicycle, "rotation", 0, -90, 500);
-                        yield QMLPromises.numberAnimation(bicycle, "y", 300, 100, 1000);
-                        yield QMLPromises.numberAnimation(bicycle, "rotation", -90, -180, 500);
-                        yield QMLPromises.numberAnimation(bicycle, "x", 300, 100, 1000);
-                        yield QMLPromises.numberAnimation(bicycle, "rotation", 180, 90, 500);
-                        yield QMLPromises.numberAnimation(bicycle, "y", 100, 300, 1000);
-                        yield QMLPromises.numberAnimation(bicycle, "rotation", 90, 0, 500);
-                    } catch (err) {
-                        errorHandler(err);
-                    }
+                    message.text = qsTr("On your marks!");
+                    message.color = "black";
+                    messageFrame.background.color = "red";
+                    yield QMLPromises.numberAnimation(messageFrame, "opacity", 1.0, 0.0, 1000);
+                    message.text = qsTr("Get set!");
+                    message.color = "black";
+                    messageFrame.background.color = "yellow";
+                    yield QMLPromises.numberAnimation(messageFrame, "opacity", 1.0, 0.0, 1000);
+                    message.text = qsTr("Go!");
+                    message.color = "white";
+                    messageFrame.background.color = "green";
+                    yield QMLPromises.numberAnimation(messageFrame, "opacity", 1.0, 0.0, 1000);
+                    yield QMLPromises.numberAnimation(bicycle, "x", 100, 300, 1000);
+                    yield QMLPromises.numberAnimation(bicycle, "rotation", 0, -90, 500);
+                    yield QMLPromises.numberAnimation(bicycle, "y", 300, 100, 1000);
+                    yield QMLPromises.numberAnimation(bicycle, "rotation", -90, -180, 500);
+                    yield QMLPromises.numberAnimation(bicycle, "x", 300, 100, 1000);
+                    yield QMLPromises.numberAnimation(bicycle, "rotation", 180, 90, 500);
+                    yield QMLPromises.numberAnimation(bicycle, "y", 100, 300, 1000);
+                    yield QMLPromises.numberAnimation(bicycle, "rotation", 90, 0, 500);
                 } )();
                 
                 // Capture animation to disk.
                 
                 QMLPromises.asyncToGenerator( function* () {
-                    try {
-                        for (let i = 0; i < 200; i++) {
-                            let filePath = "C:/temp/img/screengrab" + String(i).padStart(4, '0') + ".png";
-                            yield QMLPromises.sleep(20);
-                            yield QMLPromises.grabToImage(body, filePath);
-                        }
-                    } catch (err) {
-                        errorHandler(err);
+                    for (let i = 0; i < 200; i++) {
+                        let filePath = "C:/temp/img/screengrab" + String(i).padStart(4, '0') + ".png";
+                        yield QMLPromises.sleep(20);
+                        yield QMLPromises.grabToImage(body, filePath);
                     }
                 } )();
 
@@ -114,11 +106,6 @@ Page {
             id: message
             color: "black"
         }
-    }
-
-    function errorHandler(err) {
-        console.error(err.message, err.stack);
-        throw err;
     }
 }
 ```
