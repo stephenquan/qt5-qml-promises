@@ -8,6 +8,7 @@ The QMLPromises singleton implements the following methods:
  - QMLPromises.sleep(interval) - introduce a pause in the promise chain specified in milliseconds
  - QMLPromises.numberAnimation(target, proprerties, from, to, duration) - change a property from one value to another over a duration specified in milliseconds
  - QMLPromises.grabToImage(item, filePath) - saves a screen grab of an item to file
+ - QMLPromises.asyncToGenerator - transcode async/await syntax to generator/iterator syntax
 
 The following animates an SVG bicycle moving along a square permiter.
 
@@ -32,41 +33,38 @@ Page {
 
                 QMLPromises.userBreak();
 
-                // Bicycle animation using Promise chaining.
+                // Bicycle animation.
 
-                Promise.resolve()
-                .then( function () {
-                    message.text = qsTr("On your marks!");
-                    message.color = "black";
-                    messageFrame.background.color = "red";
-                    return QMLPromises.numberAnimation(messageFrame, "opacity", 1.0, 0.0, 1000);
-                } )
-                .then( function () {
-                    message.text = qsTr("Get set!")
-                    message.color = "black";
-                    messageFrame.background.color = "yellow";
-                    return QMLPromises.numberAnimation(messageFrame, "opacity", 1.0, 0.0, 1000);
-                } )
-                .then( function () {
-                    message.text = qsTr("Go!")
-                    message.color = "white";
-                    messageFrame.background.color = "green";
-                    return QMLPromises.numberAnimation(messageFrame, "opacity", 1.0, 0.0, 1000);
-                } )
-                .then( () => QMLPromises.numberAnimation(bicycle, "x", 100, 300, 1000) )
-                .then( () => QMLPromises.numberAnimation(bicycle, "rotation", 0, -90, 500) )
-                .then( () => QMLPromises.numberAnimation(bicycle, "y", 300, 100, 1000) )
-                .then( () => QMLPromises.numberAnimation(bicycle, "rotation", -90, -180, 500) )
-                .then( () => QMLPromises.numberAnimation(bicycle, "x", 300, 100, 1000) )
-                .then( () => QMLPromises.numberAnimation(bicycle, "rotation", 180, 90, 500) )
-                .then( () => QMLPromises.numberAnimation(bicycle, "y", 100, 300, 1000) )
-                .then( () => QMLPromises.numberAnimation(bicycle, "rotation", 90, 0, 500) )
-                .catch( err => errorHandler(err) )
-                ;
+                QMLPromises.asyncToGenerator( function* () {
+                    try {
+                        message.text = qsTr("On your marks!");
+                        message.color = "black";
+                        messageFrame.background.color = "red";
+                        yield QMLPromises.numberAnimation(messageFrame, "opacity", 1.0, 0.0, 1000);
+                        message.text = qsTr("Get set!");
+                        message.color = "black";
+                        messageFrame.background.color = "yellow";
+                        yield QMLPromises.numberAnimation(messageFrame, "opacity", 1.0, 0.0, 1000);
+                        message.text = qsTr("Go!");
+                        message.color = "white";
+                        messageFrame.background.color = "green";
+                        yield QMLPromises.numberAnimation(messageFrame, "opacity", 1.0, 0.0, 1000);
+                        yield QMLPromises.numberAnimation(bicycle, "x", 100, 300, 1000);
+                        yield QMLPromises.numberAnimation(bicycle, "rotation", 0, -90, 500);
+                        yield QMLPromises.numberAnimation(bicycle, "y", 300, 100, 1000);
+                        yield QMLPromises.numberAnimation(bicycle, "rotation", -90, -180, 500);
+                        yield QMLPromises.numberAnimation(bicycle, "x", 300, 100, 1000);
+                        yield QMLPromises.numberAnimation(bicycle, "rotation", 180, 90, 500);
+                        yield QMLPromises.numberAnimation(bicycle, "y", 100, 300, 1000);
+                        yield QMLPromises.numberAnimation(bicycle, "rotation", 90, 0, 500);
+                    } catch (err) {
+                        err => errorHandler(err);
+                    }
+                } )();
                 
-                // Use await-async like syntax to capture animation to disk.
+                // Capture animation to disk.
                 
-                _asyncToGenerator( function* () {
+                QMLPromises.asyncToGenerator( function* () {
                     try {
                         for (let i = 0; i < 200; i++) {
                             let filePath = "C:/temp/img/screengrab" + String(i).padStart(4, '0') + ".png";
@@ -81,7 +79,6 @@ Page {
                 // Use ffmpeg to combine the above images into an animated gif
                 // ffmpeg -y -framerate 10 -i "screengrab%%04d.png"  -vf fps=10,palettegen pal.png
                 // ffmpeg -y -framerate 10 -i "screengrab%%04d.png" -i pal.png -lavfi "fps=10 [x]; [x][1:v] paletteuse" out.gif
-
             }
         }
     }
