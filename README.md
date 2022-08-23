@@ -58,7 +58,7 @@ Page {
                         yield QMLPromises.numberAnimation(bicycle, "y", 100, 300, 1000);
                         yield QMLPromises.numberAnimation(bicycle, "rotation", 90, 0, 500);
                     } catch (err) {
-                        err => errorHandler(err);
+                        errorHandler(err);
                     }
                 } )();
                 
@@ -72,7 +72,7 @@ Page {
                             yield QMLPromises.grabToImage(body, filePath);
                         }
                     } catch (err) {
-                        err => errorHandler(err);
+                        errorHandler(err);
                     }
                 } )();
 
