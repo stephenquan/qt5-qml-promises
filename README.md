@@ -8,7 +8,7 @@ The QMLPromises singleton implements the following methods:
  - QMLPromises.sleep(interval) - introduce a pause in the promise chain specified in milliseconds
  - QMLPromises.numberAnimation(target, proprerties, from, to, duration) - change a property from one value to another over a duration specified in milliseconds
  - QMLPromises.grabToImage(item, filePath) - saves a screen grab of an item to file
- - QMLPromises.asyncToGenerator - transcode async/await syntax to generator/iterator syntax
+ - QMLPromises.asyncToGenerator(fn) - transcode async/await syntax to generator/iterator syntax
 
 The following animates an SVG bicycle moving along a square permiter.
 
