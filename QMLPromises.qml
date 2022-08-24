@@ -60,7 +60,7 @@ Item {
         id: sleepComponent
     }
 
-    NumberAnimationComponent {
+    NumberAnimationPromiseComponent {
         id: numberAnimationComponent
     }
 
