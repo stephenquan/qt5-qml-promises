@@ -32,8 +32,8 @@ Item {
         return invoke(sleepComponent, { interval } );
     }
 
-    function numberAnimation(target, property, from, to, duration) {
-        return invoke(numberAnimationComponent, { target, property, from, to, duration } );
+    function numberAnimation(properties) {
+        return invoke(numberAnimationComponent, properties);
     }
 
     function grabToImage(item, filePath) {
