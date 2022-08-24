@@ -3,15 +3,10 @@ import QtQuick 2.15
 Item {
     property var errorHandler: null
     property var owner: null
-
-    QtObject {
-        id: internal
-
-        property double userAbortTime: 0
-    }
+    property double userAbortTime: 0
 
     function userAbort() {
-        internal.userAbortTime = Date.now();
+        userAbortTime = Date.now();
     }
 
     function invoke(promiseComponent, props) {
@@ -19,7 +14,7 @@ Item {
             let _props = props ?? { };
             _props.resolve = resolve;
             _props.reject = reject;
-            _props.userAbortTime = Qt.binding(() => internal.userAbortTime);
+            _props.userAbortTime = Qt.binding(() => userAbortTime);
 
             try {
                 promiseComponent.createObject(owner, _props);
