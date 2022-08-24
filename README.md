@@ -4,7 +4,7 @@ Implements JavaScript Promise wrapper for chaining QML events together.
 
 The QMLPromises implements the following methods:
 
- - userBreak() - cancel previous running QMLPromises.
+ - userAbort() - cancel previous running QMLPromises.
  - sleep(interval) - introduce a pause in the promise chain specified in milliseconds
  - numberAnimation(target, proprerties, from, to, duration) - change a property from one value to another over a duration specified in milliseconds
  - grabToImage(item, filePath) - saves a screen grab of an item to file
@@ -31,7 +31,7 @@ Page {
 
                 // Cancel previously running Promises.
 
-                qmlPromises.userBreak();
+                qmlPromises.userAbort();
 
                 // Bicycle animation.
 
@@ -110,6 +110,16 @@ Page {
     
     QMLPromises {
         id: qmlPromises
+        errorHandler: customErrorHandler
+    }
+        
+    function customErrorHandler(err) {
+        let fileName = err.fileName ?? "";
+        let lineNumber = err.lineNumber ?? 1;
+        let columnNumber = err.columnNumber ?? 1;
+        let message = err.message ?? "";
+        console.error("* " + fileName + ":" + lineNumber + ":" + columnNumber + ": " + message);
+        throw err;
     }
 }
 ```
