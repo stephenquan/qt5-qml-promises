@@ -5,10 +5,10 @@ Implements JavaScript Promise wrapper for chaining QML events together.
 The QMLPromises implements the following methods:
 
  - userAbort() - cancel previous running QMLPromises.
- - sleep(interval) - introduce a pause in the promise chain specified in milliseconds
+ - sleep(interval) - introduce a pause in the promise chain specified in milliseconds.
  - numberAnimation(target, proprerties, from, to, duration) - change a property from one value to another over a duration specified in milliseconds
- - grabToImage(item, filePath) - saves a screen grab of an item to file
- - asyncToGenerator(fn) - transcode async function with await to function generator with yield
+ - grabToImage(item, filePath) - saves a screen grab of an item to file.
+ - asyncToGenerator(fn) - transcode async function with await to function generator with yield.
 
 The following animates an SVG bicycle moving along a square perimeter.
 
