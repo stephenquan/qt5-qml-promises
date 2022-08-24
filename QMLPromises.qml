@@ -2,6 +2,7 @@ import QtQuick 2.15
 
 Item {
     property var errorHandler: null
+    property var owner: null
 
     QtObject {
         id: internal
@@ -21,7 +22,7 @@ Item {
             _props.userAbortTime = Qt.binding(() => internal.userAbortTime);
 
             try {
-                promiseComponent.createObject(null, _props);
+                promiseComponent.createObject(owner, _props);
             } catch (err) {
                 reject(err);
             }
@@ -34,6 +35,51 @@ Item {
 
     function numberAnimation(properties) {
         return invoke(numberAnimationComponent, properties);
+    }
+
+    function fetch(properties) {
+        return new Promise(function (resolve, reject) {
+            let _prop = properties ?? { };
+            let method = _prop["method"] ?? "GET";
+            let url = _prop["url"] ?? "https://www.arcgis.com";
+            let body = _prop["body"] ?? null;
+
+            let xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function() {
+                if (xmlhttp.readyState !== XMLHttpRequest.DONE) {
+                    return;
+                }
+
+                let responseJson = null;
+                try {
+                    responseJson = JSON.parse(xmlhttp.responseText);
+                } catch (parseErr) {
+                    reject(parseErr);
+                }
+
+                let obj = {
+                    response: responseJson,
+                    responseText: xmlhttp.responseText
+                };
+
+                Qt.callLater(resolve, obj);
+            };
+
+            if (body) {
+                let query = [ ];
+                for (let key in body) {
+                    let value = body[key];
+                    query.push(key + "=" + encodeURIComponent(value));
+                }
+                let queryString = query.join("&");
+
+                xmlhttp.open(method, url + "?" + queryString);
+                xmlhttp.send();
+            } else {
+                xmlhttp.open(method, url);
+                xmlhttp.send();
+            }
+        } );
     }
 
     function grabToImage(item, filePath) {
