@@ -1,6 +1,7 @@
 import QtQuick 2.15
 
 Item {
+    id: qmlPromises
     property var errorHandler: null
     property var owner: null
     property double userAbortTime: 0
@@ -15,9 +16,10 @@ Item {
             _props.resolve = resolve;
             _props.reject = reject;
             _props.userAbortTime = Qt.binding(() => userAbortTime);
+            let _owner = owner ?? qmlPromises;
 
             try {
-                promiseComponent.createObject(owner, _props);
+                promiseComponent.createObject(_owner, _props);
             } catch (err) {
                 reject(err);
             }
