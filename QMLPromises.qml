@@ -1,34 +1,39 @@
 import QtQuick 2.15
 
 Item {
+    property var errorHandler: null
+
     QtObject {
         id: internal
 
-        property double userBreakTime: 0
+        property double userAbortTime: 0
     }
 
-    function userBreak() {
-        internal.userBreakTime = Date.now();
+    function userAbort() {
+        internal.userAbortTime = Date.now();
+    }
+
+    function invoke(promiseComponent, props) {
+        return new Promise(function (resolve, reject) {
+            let _props = props ?? { };
+            _props.resolve = resolve;
+            _props.reject = reject;
+            _props.userAbortTime = Qt.binding(() => internal.userAbortTime);
+
+            try {
+                promiseComponent.createObject(null, _props);
+            } catch (err) {
+                reject(err);
+            }
+        } );
     }
 
     function sleep(interval) {
-        return new Promise(function (resolve, reject) {
-            try {
-                sleepComponent.createObject(null, { interval, resolve, reject } );
-            } catch (err) {
-                reject(err);
-            }
-        } );
+        return invoke(sleepComponent, { interval } );
     }
 
-    function numberAnimation(target, properties, from, to, duration) {
-        return new Promise(function (resolve, reject) {
-            try {
-                numberAnimationComponent.createObject(null, { target, properties, from, to, duration, resolve, reject } );
-            } catch (err) {
-                reject(err);
-            }
-        } );
+    function numberAnimation(target, property, from, to, duration) {
+        return invoke(numberAnimationComponent, { target, property, from, to, duration } );
     }
 
     function grabToImage(item, filePath) {
@@ -51,75 +56,12 @@ Item {
         } );
     }
 
-    Component {
+    SleepPromiseComponent {
         id: sleepComponent
-        Timer {
-            property var resolve
-            property var reject
-            property double startTime: Date.now()
-            property bool aborting: internal.userBreakTime > startTime
-            property bool aborted: false
-
-            running: true
-            repeat: false
-
-            onTriggered: {
-                if (aborted) {
-                    return;
-                }
-
-                stop();
-                resolve();
-                Qt.callLater(destroy);
-            }
-
-            onAbortingChanged: {
-                if (aborting) {
-                    if (running) {
-                        aborted = true;
-                        stop();
-                        reject(new Error("User Break"));
-                        Qt.callLater(destroy);
-                    }
-                }
-            }
-
-        }
     }
 
-    Component {
+    NumberAnimationComponent {
         id: numberAnimationComponent
-        NumberAnimation {
-            property var resolve
-            property var reject
-            property double startTime: Date.now()
-            property bool aborting: internal.userBreakTime > startTime
-            property bool aborted: false
-            loops: 1
-            paused: false
-            running: true
-
-            onFinished: {
-                if (aborted) {
-                    return;
-                }
-
-                stop();
-                resolve();
-                Qt.callLater(destroy);
-            }
-
-            onAbortingChanged: {
-                if (aborting) {
-                    if (running) {
-                        aborted = true;
-                        stop();
-                        reject(new Error("User Break"));
-                        Qt.callLater(destroy);
-                    }
-                }
-            }
-        }
     }
 
     function asyncToGenerator(fn) {
@@ -127,12 +69,8 @@ Item {
             try {
                 yield *fn();
             } catch (err) {
-                let fileName = err.fileName ?? "";
-                let lineNumber = err.lineNumber ?? 1;
-                let columnNumber = err.columnNumber ?? 1;
-                let message = err.message ?? "";
-                console.error(fileName + ":" + lineNumber + ":" + columnNumber + ": " + message);
-                throw err;
+                let _errorHandler = errorHandler ?? defaultErrorHandler;
+                _errorHandler(err);
             }
         } );
     }
@@ -167,5 +105,14 @@ Item {
         } else {
             Promise.resolve(value).then(_next, _throw)
         }
+    }
+
+    function defaultErrorHandler(err) {
+        let fileName = err.fileName ?? "";
+        let lineNumber = err.lineNumber ?? 1;
+        let columnNumber = err.columnNumber ?? 1;
+        let message = err.message ?? "";
+        console.error(fileName + ":" + lineNumber + ":" + columnNumber + ": " + message);
+        throw err;
     }
 }
