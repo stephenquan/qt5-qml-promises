@@ -36,14 +36,27 @@ Item {
 
     function fetch(properties) {
         return new Promise(function (resolve, reject) {
+            let startTime = Date.now();
+            let userAborted = false;
             let _prop = properties ?? { };
             let method = _prop["method"] ?? "GET";
             let url = _prop["url"] ?? "https://www.arcgis.com";
             let body = _prop["body"] ?? null;
+            let headers = _prop["headers"] ?? null;
 
             let xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function() {
+                if (userAborted) {
+                    return;
+                }
+
                 if (xmlhttp.readyState !== XMLHttpRequest.DONE) {
+                    return;
+                }
+
+                if (userAbortTime > startTime) {
+                    userAborted = true;
+                    Qt.callLater(reject, new Error("User Abort"));
                     return;
                 }
 
@@ -51,6 +64,7 @@ Item {
                 try {
                     responseJson = JSON.parse(xmlhttp.responseText);
                 } catch (parseErr) {
+                    console.info(xmlhttp.responseText);
                     reject(parseErr);
                 }
 
@@ -62,6 +76,9 @@ Item {
                 Qt.callLater(resolve, obj);
             };
 
+            let _url = url;
+            let payload = null;
+
             if (body) {
                 let query = [ ];
                 for (let key in body) {
@@ -69,11 +86,25 @@ Item {
                     query.push(key + "=" + encodeURIComponent(value));
                 }
                 let queryString = query.join("&");
+                payload = queryString;
 
-                xmlhttp.open(method, url + "?" + queryString);
-                xmlhttp.send();
+                if (method === "GET") {
+                    _url = url + "?" + queryString;
+                    payload = null;
+                }
+            }
+
+            xmlhttp.open(method, _url);
+
+            if (headers) {
+                for (let header in headers) {
+                    xmlhttp.setRequestHeader(header, headers[header]);
+                }
+            }
+
+            if (payload) {
+                xmlhttp.send(payload);
             } else {
-                xmlhttp.open(method, url);
                 xmlhttp.send();
             }
         } );
