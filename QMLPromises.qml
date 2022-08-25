@@ -17,6 +17,10 @@ Item {
     }
 
     function start() {
+        if (running) {
+            return Promise.reject(new Error("Already Started"));
+        }
+
         startTime = Date.now();
         aborted = false;
         return Promise.resolve();
