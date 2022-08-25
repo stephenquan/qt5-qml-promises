@@ -25,9 +25,7 @@ Component {
         onContextAbortingChanged: {
             if (contextAborting) {
                 if (running) {
-                    userAborted = true;
                     stop();
-                    //reject(new Error("User Abort"));
                     context.finishAbort(reject);
                     Qt.callLater(destroy);
                 }

@@ -36,11 +36,11 @@ Item {
     function invoke(promiseComponent, props) {
         return new Promise(function (resolve, reject) {
             let _props = props ?? { };
-            _props.context = qmlPromises;
+            if (!("context" in _props)) {
+                _props.context = qmlPromises;
+            }
             _props.resolve = resolve;
             _props.reject = reject;
-            //_props.abortTime = Qt.binding(() => abortTime);
-            //_props.startTime = startTime;
             let _owner = owner ?? qmlPromises;
 
             try {
@@ -69,6 +69,7 @@ Item {
         }
 
         return waitUntil( {
+                             context: null,
                              target: qmlPromises,
                              property: "running",
                              value: false

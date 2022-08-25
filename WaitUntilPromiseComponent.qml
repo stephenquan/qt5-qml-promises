@@ -26,11 +26,8 @@ Component {
 
         onContextAbortingChanged: {
             if (contextAborting) {
-                if (running) {
-                    stop();
-                    context.finishAbort(reject);
-                    Qt.callLater(destroy);
-                }
+                context.finishAbort(reject);
+                Qt.callLater(destroy);
             }
         }
     }
