@@ -4,18 +4,16 @@ Component {
     id: sleepComponent
 
     Timer {
+        property var context
         property var resolve
         property var reject
-        property double startTime: Date.now()
-        property double userAbortTime: 0
-        property bool userAborting: userAbortTime > startTime
-        property bool userAborted: false
+        property bool contextAborting: context ? context.aborting : false
 
         running: true
         repeat: false
 
         onTriggered: {
-            if (userAborted) {
+            if (context && context.aborted) {
                 return;
             }
 
@@ -24,12 +22,13 @@ Component {
             Qt.callLater(destroy);
         }
 
-        onUserAbortingChanged: {
-            if (userAborting) {
+        onContextAbortingChanged: {
+            if (contextAborting) {
                 if (running) {
                     userAborted = true;
                     stop();
-                    reject(new Error("User Abort"));
+                    //reject(new Error("User Abort"));
+                    context.finishAbort(reject);
                     Qt.callLater(destroy);
                 }
             }

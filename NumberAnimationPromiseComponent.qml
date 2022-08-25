@@ -4,19 +4,17 @@ Component {
     id: numberAnimationComponent
 
     NumberAnimation {
+        property var context
         property var resolve
         property var reject
-        property double startTime: Date.now()
-        property double userAbortTime: 0
-        property bool userAborting: userAbortTime > startTime
-        property bool userAborted: false
+        property bool contextAborting: context ? context.aborting : false
 
         loops: 1
         paused: false
         running: true
 
         onFinished: {
-            if (userAborted) {
+            if (context && context.aborted) {
                 return;
             }
 
@@ -25,12 +23,12 @@ Component {
             Qt.callLater(destroy);
         }
 
-        onUserAbortingChanged: {
-            if (userAborting) {
+        onContextAbortingChanged: {
+            if (contextAborting) {
                 if (running) {
                     userAborted = true;
                     stop();
-                    reject(new Error("User Abort"));
+                    context.finishAbort(reject);
                     Qt.callLater(destroy);
                 }
             }

@@ -4,18 +4,43 @@ Item {
     id: qmlPromises
     property var errorHandler: null
     property var owner: null
-    property double userAbortTime: 0
+    property bool aborted: false
+    property double abortTime: 0
+    property double startTime: 0
+    property double finishTime: 0
+    readonly property bool running: startTime > finishTime
+    readonly property bool aborting: !aborted && (abortTime > startTime)
 
-    function userAbort() {
-        userAbortTime = Date.now();
+    function abort() {
+        abortTime = Date.now();
+        return Promise.resolve();
+    }
+
+    function start() {
+        startTime = Date.now();
+        aborted = false;
+        return Promise.resolve();
+    }
+
+    function finish() {
+        finishTime = Date.now();
+        return Promise.resolve();
+    }
+
+    function finishAbort(reject) {
+        aborted = true;
+        finishTime = Date.now();
+        reject(new Error("Abort"));
     }
 
     function invoke(promiseComponent, props) {
         return new Promise(function (resolve, reject) {
             let _props = props ?? { };
+            _props.context = qmlPromises;
             _props.resolve = resolve;
             _props.reject = reject;
-            _props.userAbortTime = Qt.binding(() => userAbortTime);
+            //_props.abortTime = Qt.binding(() => abortTime);
+            //_props.startTime = startTime;
             let _owner = owner ?? qmlPromises;
 
             try {
@@ -34,10 +59,38 @@ Item {
         return invoke(numberAnimationComponent, properties);
     }
 
+    function waitUntil(properties) {
+        return invoke(waitUntilComponent, properties);
+    }
+
+    function waitUntilFinished() {
+        if (!running) {
+            return Promise.resolve();
+        }
+
+        return waitUntil( {
+                             target: qmlPromises,
+                             property: "running",
+                             value: false
+                         } );
+    }
+
+    function abortIfRunning() {
+        if (!running) {
+            return Promise.resolve();
+        }
+
+        return new Promise(function (resolve, reject) {
+            abort()
+            .then( () => waitUntilFinished() )
+            .then( () => resolve() )
+            .catch( err => reject(err) )
+            ;
+        } );
+    }
+
     function fetch(properties) {
         return new Promise(function (resolve, reject) {
-            let startTime = Date.now();
-            let userAborted = false;
             let _prop = properties ?? { };
             let method = _prop["method"] ?? "GET";
             let url = _prop["url"] ?? "https://www.arcgis.com";
@@ -46,7 +99,7 @@ Item {
 
             let xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function() {
-                if (userAborted) {
+                if (aborted) {
                     return;
                 }
 
@@ -54,9 +107,8 @@ Item {
                     return;
                 }
 
-                if (userAbortTime > startTime) {
-                    userAborted = true;
-                    Qt.callLater(reject, new Error("User Abort"));
+                if (aborting) {
+                    finishAbort(reject);
                     return;
                 }
 
@@ -136,6 +188,10 @@ Item {
 
     NumberAnimationPromiseComponent {
         id: numberAnimationComponent
+    }
+
+    WaitUntilPromiseComponent {
+        id: waitUntilComponent
     }
 
     function asyncToGenerator(fn) {
