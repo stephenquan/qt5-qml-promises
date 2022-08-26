@@ -31,6 +31,18 @@ Item {
         return Promise.resolve();
     }
 
+    function pass() {
+        if (aborting) {
+            aborted = true;
+            finishTime = Date.now();
+            return Promise.reject(new Error("Abort"));
+        }
+
+        return new Promise(function (resolve, reject) {
+            Qt.callLater(resolve);
+        } );
+    }
+
     function finishAbort(reject) {
         aborted = true;
         finishTime = Date.now();
@@ -202,8 +214,11 @@ Item {
     function asyncToGenerator(fn) {
         return _asyncToGenerator( function* () {
             try {
+                yield start();
                 yield *fn();
+                yield finish();
             } catch (err) {
+                finish();
                 let _errorHandler = errorHandler ?? defaultErrorHandler;
                 _errorHandler(err);
             }
