@@ -4,129 +4,18 @@ Implements JavaScript Promise wrapper for chaining QML events together.
 
 The QMLPromises implements the following methods:
 
- - userAbort() - cancel previous running QMLPromises.
- - sleep(interval) - introduce a pause in the promise chain specified in milliseconds.
- - numberAnimation(target, proprerties, from, to, duration) - change a property from one value to another over a duration specified in milliseconds
+ - abort() - cancel an currently running Promise chain.
+ - sleep(delay) - a Promise wrapper for Timer. Pauses a Promise chain specified in milliseconds.
+ - pass() - a Promise wrapper for Qt.callLater. Introduces a small pause in a Promise chain.
+ - numberAnimation( {target, property, from, to, duratio } n) - a Promise wrapper for NumberAnimation. Change a property from one value to another over a duration specified in milliseconds.
+ - fetch(properties) - a Promise wrapper for XMLHttpRequest.
  - grabToImage(item, filePath) - saves a screen grab of an item to file.
  - asyncToGenerator(fn) - transcode async function with await to function generator with yield.
 
-The following animates an SVG bicycle moving along a square perimeter.
+To see a demonstration of this library refer to:
 
-```qml
-import "qt5-qml-promises"
-
-Page {
-    anchors.fill: parent
-
-    footer: Frame {
-        Button {
-            id: button
-            anchors.centerIn: parent
-            text: qsTr("Go")
-
-            onClicked: {
-                bicycle.x = 100;
-                bicycle.y = 300;
-                bicycle.rotation = 0;
-
-                // Cancel previously running Promises.
-
-                qmlPromises.userAbort();
-
-                // Bicycle animation.
-
-                qmlPromises.asyncToGenerator( function* () {
-                    message.text = qsTr("On your marks!");
-                    message.color = "black";
-                    messageFrame.background.color = "red";
-                    messageFrame.opacity = 1.0;
-                    yield qmlPromises.numberAnimation( { target: messageFrame, property: "opacity", from: 1.0, to: 0.0, duration: 1000 } );
-                    message.text = qsTr("Get set!");
-                    message.color = "black";
-                    messageFrame.background.color = "yellow";
-                    messageFrame.opacity = 1.0;
-                    yield qmlPromises.numberAnimation( { target: messageFrame, property: "opacity", from: 1.0, to: 0.0, duration: 1000 } );
-                    message.text = qsTr("Go!");
-                    message.color = "white";
-                    messageFrame.background.color = "green";
-                    messageFrame.opacity = 1.0;
-                    yield qmlPromises.numberAnimation( { target: messageFrame, property: "opacity", from: 1.0, to: 0.0, duration: 1000 } );
-                    yield qmlPromises.numberAnimation( { target: bicycle, property: "x", from: 100, to: 300, duration: 1000 } );
-                    yield qmlPromises.numberAnimation( { target: bicycle, property: "rotation", from: 0, to: -90, duration: 1000 } );
-                    yield qmlPromises.numberAnimation( { target: bicycle, property: "y", from: 300, to: 100, duration: 1000 } );
-                    yield qmlPromises.numberAnimation( { target: bicycle, property: "rotation", from: -90, to: -180, duration: 1000 } );
-                    yield qmlPromises.numberAnimation( { target: bicycle, property: "x", from: 300, to: 100, duration: 1000 } );
-                    yield qmlPromises.numberAnimation( { target: bicycle, property: "rotation", from: 180, to: 90, duration: 1000 } );
-                    yield qmlPromises.numberAnimation( { target: bicycle, property: "y", from: 100, to: 300, duration: 1000 } );
-                    yield qmlPromises.numberAnimation( { target: bicycle, property: "rotation", from: 90, to: 0, duration: 1000 } );
-                } )();
-                
-                // Capture animation to disk.
-                
-                qmlPromises.asyncToGenerator( function* () {
-                    for (let i = 0; i < 200; i++) {
-                        let filePath = "C:/temp/img/screengrab" + String(i).padStart(4, '0') + ".png";
-                        yield qmlPromises.sleep(20);
-                        yield qmlPromises.grabToImage(body, filePath);
-                    }
-                } )();
-
-                // Use ffmpeg to combine the above images into an animated gif
-                // ffmpeg -y -framerate 10 -i "screengrab%%04d.png"  -vf fps=10,palettegen pal.png
-                // ffmpeg -y -framerate 10 -i "screengrab%%04d.png" -i pal.png -lavfi "fps=10 [x]; [x][1:v] paletteuse" out.gif
-            }
-        }
-    }
-
-    Item {
-        id: bicycle
-        x: 100
-        y: 300
-        width: 0
-        height: 0
-        property color color: "blue"
-
-        Button {
-            id: bicycleButton
-            anchors.centerIn: parent
-            background: Item { }
-            icon.source: "https://raw.githubusercontent.com/Esri/calcite-ui-icons/master/icons/biking-32.svg"
-            icon.width: 64
-            icon.height: 64
-            icon.color: parent.color
-        }
-    }
-
-    Frame {
-        id: messageFrame
-        anchors.centerIn: parent
-        opacity: 0.0
-        background: Rectangle {
-            color: "blue"
-            radius: 5
-        }
-        Text {
-            id: message
-            color: "black"
-        }
-    }
-    
-    QMLPromises {
-        id: qmlPromises
-        errorHandler: customErrorHandler
-    }
-        
-    function customErrorHandler(err) {
-        let fileName = err.fileName ?? "";
-        let lineNumber = err.lineNumber ?? 1;
-        let columnNumber = err.columnNumber ?? 1;
-        let message = err.message ?? "";
-        console.error("* " + fileName + ":" + lineNumber + ":" + columnNumber + ": " + message);
-        throw err;
-    }
-}
-```
-
+ - https://github.com/stephenquan/qt5-qml-promises-demo
+ 
 To use QMLPromises QML component in your project consider cloning this repo directly in your project:
 
     git clone https://github.com/stephenquan/qt5-qml-promises.git
