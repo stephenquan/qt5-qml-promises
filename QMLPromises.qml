@@ -2,18 +2,26 @@ import QtQuick 2.15
 
 Item {
     id: qmlPromises
-    property var errorHandler: null
-    property var owner: null
-    property bool aborted: false
-    property double abortTime: 0
-    property double startTime: 0
-    property double finishTime: 0
-    readonly property bool running: startTime > finishTime
-    readonly property bool aborting: !aborted && (abortTime > startTime)
 
-    function abort() {
-        abortTime = Date.now();
-        return Promise.resolve();
+    property var errorHandler: null
+    property bool aborted: false
+    readonly property bool running: internal.startTime > internal.finishTime
+    readonly property bool aborting: !aborted && (internal.abortTime > internal.startTime)
+
+    QtObject {
+        id: internal
+
+        property double abortTime: 0
+        property double startTime: 0
+        property double finishTime: 0
+
+        function abort(reject) {
+            Qt.callLater(function() {
+                aborted = true;
+                finishTime = Date.now();
+                reject(new Error("Abort"));
+            } );
+        }
     }
 
     function start() {
@@ -21,20 +29,25 @@ Item {
             return Promise.reject(new Error("Already Started"));
         }
 
-        startTime = Date.now();
+        internal.startTime = Date.now();
         aborted = false;
         return Promise.resolve();
     }
 
     function finish() {
-        finishTime = Date.now();
+        internal.finishTime = Date.now();
+        return Promise.resolve();
+    }
+
+    function abort() {
+        internal.abortTime = Date.now();
         return Promise.resolve();
     }
 
     function pass() {
         if (aborting) {
             aborted = true;
-            finishTime = Date.now();
+            internal.finish();
             return Promise.reject(new Error("Abort"));
         }
 
@@ -43,24 +56,17 @@ Item {
         } );
     }
 
-    function finishAbort(reject) {
-        aborted = true;
-        finishTime = Date.now();
-        reject(new Error("Abort"));
-    }
-
     function invoke(promiseComponent, props) {
         return new Promise(function (resolve, reject) {
             let _props = props ?? { };
-            if (!("context" in _props)) {
-                _props.context = qmlPromises;
-            }
-            _props.resolve = resolve;
-            _props.reject = reject;
-            let _owner = owner ?? qmlPromises;
+            _props._resolve = resolve;
+            _props._reject = reject;
+            _props._abort = internal.abort;
+            _props._aborted = Qt.binding( () => aborted );
+            _props._aborting = Qt.binding( () => aborting );
 
             try {
-                promiseComponent.createObject(_owner, _props);
+                promiseComponent.createObject(qmlPromises, _props);
             } catch (err) {
                 reject(err);
             }
@@ -125,7 +131,7 @@ Item {
                 }
 
                 if (aborting) {
-                    finishAbort(reject);
+                    internal.abort(reject);
                     return;
                 }
 

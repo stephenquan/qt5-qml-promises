@@ -4,29 +4,30 @@ Component {
     id: sleepComponent
 
     Timer {
-        property var context
-        property var resolve
-        property var reject
-        property bool contextAborting: context ? context.aborting : false
+        property var _resolve
+        property var _reject
+        property var _abort
+        property bool _aborted: false
+        property bool _aborting: false
 
         running: true
         repeat: false
 
         onTriggered: {
-            if (context && context.aborted) {
+            if (_aborted) {
                 return;
             }
 
             stop();
-            resolve();
+            _resolve();
             Qt.callLater(destroy);
         }
 
-        onContextAbortingChanged: {
-            if (contextAborting) {
+        on_AbortingChanged: {
+            if (_aborting) {
                 if (running) {
                     stop();
-                    context.finishAbort(reject);
+                    _abort(_reject);
                     Qt.callLater(destroy);
                 }
             }
