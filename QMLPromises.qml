@@ -114,11 +114,11 @@ Item {
 
     function fetch(properties) {
         return new Promise(function (resolve, reject) {
-            let _prop = properties ?? { };
+            let _prop = Object.assign({}, properties);
             let method = _prop["method"] ?? "GET";
             let url = _prop["url"] ?? "https://www.arcgis.com";
             let body = _prop["body"] ?? null;
-            let headers = _prop["headers"] ?? null;
+            let headers = Object.assign({}, _prop["headers"]);
 
             let xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function() {
@@ -170,6 +170,10 @@ Item {
             }
 
             xmlhttp.open(method, _url);
+
+            if (method !== "GET" && payload) {
+                headers["Content-type"] = "application/x-www-form-urlencoded";
+            }
 
             if (headers) {
                 for (let header in headers) {
